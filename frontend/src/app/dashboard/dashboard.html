@@ -1,0 +1,549 @@
+<div class="dashboard-layout">
+  <!-- Top Navigation Header -->
+  <header class="top-nav">
+    <div class="nav-brand">
+      <div class="brand-logo">🛡️</div>
+      <div class="brand-info">
+        <span class="brand-name">MPloy<span class="brand-highlight">Chek</span></span>
+        <span class="brand-tag">Verification Portal</span>
+      </div>
+    </div>
+
+    <!-- Center Navigation Links -->
+    <nav class="nav-links">
+      <a routerLink="/dashboard" class="nav-link active">
+        <span>📋</span> Verification Records
+      </a>
+      @if (authService.isAdmin()) {
+        <a routerLink="/admin" class="nav-link admin-nav-link">
+          <span>👥</span> User Management <span class="badge-admin-tag">Admin</span>
+        </a>
+      }
+    </nav>
+
+    <!-- User Profile & Logout -->
+    <div class="nav-user-section">
+      @if (currentUser(); as user) {
+        <div class="user-pill">
+          <div class="user-avatar" [class.avatar-admin]="user.role === 'Admin'">
+            {{ user.name.charAt(0) }}
+          </div>
+          <div class="user-meta">
+            <span class="user-name">{{ user.name }}</span>
+            <span class="user-role-badge" [class.role-admin]="user.role === 'Admin'">
+              {{ user.role }}
+            </span>
+          </div>
+        </div>
+      }
+      <button class="logout-btn" (click)="logout()" title="Sign out">
+        <span>Sign Out 🚪</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Content Container -->
+  <main class="dashboard-main">
+    
+    <!-- Feedback Toast -->
+    @if (feedbackToast(); as toast) {
+      <div class="toast-banner toast-success">
+        <span class="toast-icon">✓</span>
+        <span>{{ toast }}</span>
+      </div>
+    }
+
+    <!-- User Profile Banner (Requirement: Show details of the logged-in user) -->
+    @if (currentUser(); as user) {
+      <section class="user-profile-banner">
+        <div class="banner-content">
+          <div class="banner-title-area">
+            <h1>Welcome back, {{ user.name }}</h1>
+            <p>Here is your workforce background screening summary for today.</p>
+          </div>
+          <div class="profile-stats-grid">
+            <div class="stat-card">
+              <span class="stat-label">User ID</span>
+              <span class="stat-value font-mono">@{{ user.userId }}</span>
+            </div>
+            <div class="stat-card">
+              <span class="stat-label">Department</span>
+              <span class="stat-value">{{ user.department }}</span>
+            </div>
+            <div class="stat-card">
+              <span class="stat-label">Access Role</span>
+              <span class="stat-value badge-role" [class.admin]="user.role === 'Admin'">
+                {{ user.role }}
+              </span>
+            </div>
+            <div class="stat-card">
+              <span class="stat-label">Email</span>
+              <span class="stat-value email-text">{{ user.email }}</span>
+            </div>
+          </div>
+        </div>
+      </section>
+    }
+
+    <!-- Challenge Showcase Toolbar: Simulated API Delay & Asynchronous Demonstration -->
+    <section class="async-showcase-panel">
+      <div class="async-header">
+        <div class="async-title">
+          <span class="pulse-dot" [class.active]="isLoading()"></span>
+          <strong>API Latency Controller (Challenge Demonstration)</strong>
+          <span class="param-tag font-mono">?delay={{ selectedDelayMs() }}ms</span>
+        </div>
+        <p class="async-description">
+          Test real-world asynchronous processing by introducing simulated backend latency.
+        </p>
+      </div>
+
+      <div class="delay-controller-row">
+        <div class="delay-presets">
+          <span class="delay-label">Select Delay Parameter:</span>
+          <button
+            type="button"
+            class="delay-btn"
+            [class.active]="selectedDelayMs() === 0"
+            (click)="onDelayChange(0)"
+          >
+            0ms (Instant)
+          </button>
+          <button
+            type="button"
+            class="delay-btn"
+            [class.active]="selectedDelayMs() === 1000"
+            (click)="onDelayChange(1000)"
+          >
+            1000ms (1s)
+          </button>
+          <button
+            type="button"
+            class="delay-btn"
+            [class.active]="selectedDelayMs() === 2000"
+            (click)="onDelayChange(2000)"
+          >
+            2000ms (2s)
+          </button>
+          <button
+            type="button"
+            class="delay-btn"
+            [class.active]="selectedDelayMs() === 3000"
+            (click)="onDelayChange(3000)"
+          >
+            3000ms (3s)
+          </button>
+        </div>
+
+        <button
+          type="button"
+          class="reload-btn"
+          (click)="loadRecords()"
+          [disabled]="isLoading()"
+        >
+          <span class="reload-icon" [class.spinning]="isLoading()">🔄</span>
+          <span>{{ isLoading() ? 'Fetching Records...' : 'Reload API Call' }}</span>
+        </button>
+      </div>
+
+      <!-- Live Asynchronous Status Readout -->
+      <div class="async-status-bar">
+        @if (isLoading()) {
+          <div class="status-reading in-flight">
+            <span class="spinner-sm"></span>
+            <span>Asynchronous HTTP Request in-flight &bull; Elapsed: <strong>{{ elapsedLoadTime() }} ms</strong></span>
+          </div>
+        } @else {
+          <div class="status-reading success">
+            <span>✓ Data fetched successfully in <strong>{{ elapsedLoadTime() }} ms</strong> (Backend Delay: {{ selectedDelayMs() }}ms)</span>
+          </div>
+        }
+      </div>
+    </section>
+
+    <!-- Role Access Level Banner -->
+    <section class="access-level-banner" [class.admin-tier]="authService.isAdmin()">
+      <div class="access-icon">
+        {{ authService.isAdmin() ? '🛡️' : '👤' }}
+      </div>
+      <div class="access-text">
+        @if (authService.isAdmin()) {
+          <strong>Full Admin Clearance Active</strong>
+          <p>
+            You have permissions to view all <strong>{{ records().length }}</strong> records, including confidential executive credit audits and comprehensive criminal screenings.
+          </p>
+        } @else {
+          <strong>General User View (Filtered Access)</strong>
+          <p>
+            Displaying <strong>{{ records().length }}</strong> standard candidate verification records. Sensitive Admin-level checks (Criminal Background, Executive Financials) are automatically withheld.
+          </p>
+        }
+      </div>
+    </section>
+
+    <!-- Records Section Header & Filters -->
+    <section class="records-container">
+      <div class="records-header">
+        <div class="header-left">
+          <h2>Candidate Verification Records</h2>
+          <span class="record-count-badge">{{ filteredRecords().length }} of {{ records().length }} records shown</span>
+        </div>
+
+        <div class="header-right">
+          <!-- Search Input -->
+          <div class="search-box">
+            <span class="search-icon">🔍</span>
+            <input
+              type="text"
+              placeholder="Search candidate, role, or check..."
+              [ngModel]="searchTerm()"
+              (ngModelChange)="searchTerm.set($event)"
+            />
+          </div>
+
+          <!-- Status Filter Dropdown -->
+          <div class="filter-box">
+            <select
+              [ngModel]="statusFilter()"
+              (ngModelChange)="statusFilter.set($event)"
+            >
+              <option value="ALL">All Statuses</option>
+              <option value="VERIFIED">Verified</option>
+              <option value="PENDING REVIEW">Pending Review</option>
+              <option value="FLAGGED">Flagged</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Error State -->
+      @if (errorMessage()) {
+        <div class="error-banner">
+          <span>⚠️ {{ errorMessage() }}</span>
+          <button (click)="loadRecords()">Try Again</button>
+        </div>
+      }
+
+      <!-- Asynchronous Loading Skeleton -->
+      @if (isLoading()) {
+        <div class="skeleton-wrapper">
+          <div class="skeleton-header-bar">
+            <span class="spinner-md"></span>
+            <span>Loading verification records asynchronously... (Delay: {{ selectedDelayMs() }}ms)</span>
+          </div>
+          <div class="skeleton-row" *ngFor="let i of [1, 2, 3, 4, 5]">
+            <div class="skeleton-cell w-15"></div>
+            <div class="skeleton-cell w-30"></div>
+            <div class="skeleton-cell w-25"></div>
+            <div class="skeleton-cell w-15"></div>
+            <div class="skeleton-cell w-15"></div>
+          </div>
+        </div>
+      }
+
+      <!-- Records Table (Visible when not loading) -->
+      @if (!isLoading()) {
+        <div class="table-responsive">
+          <table class="records-table">
+            <thead>
+              <tr>
+                <th>Record ID</th>
+                <th>Candidate & Position</th>
+                <th>Verification Type</th>
+                <th>Status</th>
+                <th>Access Tier</th>
+                <th>Risk Index</th>
+                <th>Submitted Date</th>
+                <th>Verifier</th>
+                <th class="text-right">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (record of filteredRecords(); track record.id) {
+                <tr class="record-row">
+                  <td class="font-mono text-cyan">{{ record.id }}</td>
+                  <td>
+                    <div class="candidate-info">
+                      <span class="candidate-name">{{ record.candidateName }}</span>
+                      <span class="candidate-pos">{{ record.position }}</span>
+                    </div>
+                  </td>
+                  <td>
+                    <span class="check-type-badge">{{ record.checkType }}</span>
+                  </td>
+                  <td>
+                    <span
+                      class="status-pill"
+                      [class.verified]="record.status === 'Verified'"
+                      [class.pending]="record.status === 'Pending Review'"
+                      [class.flagged]="record.status === 'Flagged'"
+                    >
+                      <span class="status-indicator"></span>
+                      {{ record.status }}
+                    </span>
+                  </td>
+                  <td>
+                    <span
+                      class="tier-badge"
+                      [class.tier-admin]="record.accessLevel === 'Admin'"
+                      [class.tier-general]="record.accessLevel === 'General'"
+                    >
+                      {{ record.accessLevel === 'Admin' ? '🔒 Admin Only' : '👥 General' }}
+                    </span>
+                  </td>
+                  <td>
+                    <div class="risk-bar-container">
+                      <div
+                        class="risk-bar"
+                        [style.width.%]="record.riskScore"
+                        [class.risk-low]="record.riskScore < 20"
+                        [class.risk-medium]="record.riskScore >= 20 && record.riskScore < 60"
+                        [class.risk-high]="record.riskScore >= 60"
+                      ></div>
+                      <span class="risk-num">{{ record.riskScore }}/100</span>
+                    </div>
+                  </td>
+                  <td class="text-muted">{{ record.submittedDate }}</td>
+                  <td>
+                    @if (record.verifiedBy === 'Pending') {
+                      <span class="verifier-pending-badge" title="No verifier has reviewed this candidate yet">
+                        <span class="badge-dot-amber"></span> Pending Assignment
+                      </span>
+                    } @else {
+                      <span class="verifier-name" title="Verified by {{ record.verifiedBy }}">
+                        <span class="verifier-avatar-mini">{{ record.verifiedBy.charAt(0) }}</span>
+                        {{ record.verifiedBy }}
+                      </span>
+                    }
+                  </td>
+                  <td class="text-right" (click)="$event.stopPropagation()">
+                    <button
+                      type="button"
+                      class="btn-inspect"
+                      (click)="openRecordModal(record)"
+                      title="Inspect full file & change status"
+                    >
+                      👁️ Review & Edit
+                    </button>
+                  </td>
+                </tr>
+              } @empty {
+                <tr>
+                  <td colspan="9" class="empty-state">
+                    <p>No verification records found matching your filters.</p>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+
+    </section>
+  </main>
+
+  <!-- Candidate Verification Details & Status Editor Modal -->
+  @if (isDetailModalOpen() && selectedRecord(); as record) {
+    <div class="modal-backdrop" (click)="closeRecordModal()">
+      <div class="modal-card modal-record-card" (click)="$event.stopPropagation()">
+        
+        <div class="modal-header">
+          <div class="modal-title-group">
+            <span class="record-id-tag font-mono">{{ record.id }}</span>
+            <h3>Candidate Verification Dossier</h3>
+          </div>
+          <button class="btn-close" (click)="closeRecordModal()">&times;</button>
+        </div>
+
+        <div class="modal-body">
+          <!-- Candidate Summary Card -->
+          <div class="dossier-card">
+            <div class="dossier-avatar">
+              {{ record.candidateName.charAt(0) }}
+            </div>
+            <div class="dossier-info">
+              <h4 class="dossier-name">{{ record.candidateName }}</h4>
+              <p class="dossier-position">{{ record.position }}</p>
+              <div class="dossier-meta-row">
+                <span class="meta-item"><strong>Check:</strong> {{ record.checkType }}</span>
+                <span class="meta-dot">&bull;</span>
+                <span class="meta-item"><strong>Access:</strong> {{ record.accessLevel }}</span>
+                <span class="meta-dot">&bull;</span>
+                <span class="meta-item"><strong>Submitted:</strong> {{ record.submittedDate }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Status Selector Buttons -->
+          <div class="form-group">
+            <label class="form-label">Update Verification Status</label>
+            <div class="status-selector-grid">
+              <button
+                type="button"
+                class="status-choice-btn choice-verified"
+                [class.selected]="editStatus() === 'Verified'"
+                (click)="setStatusPreset('Verified')"
+              >
+                <span class="choice-icon">🟢</span>
+                <span class="choice-label">Verified</span>
+                <span class="choice-sub">All clear (Passed)</span>
+              </button>
+
+              <button
+                type="button"
+                class="status-choice-btn choice-pending"
+                [class.selected]="editStatus() === 'Pending Review'"
+                (click)="setStatusPreset('Pending Review')"
+              >
+                <span class="choice-icon">🟡</span>
+                <span class="choice-label">Pending Review</span>
+                <span class="choice-sub">In progress</span>
+              </button>
+
+              <button
+                type="button"
+                class="status-choice-btn choice-flagged"
+                [class.selected]="editStatus() === 'Flagged'"
+                (click)="setStatusPreset('Flagged')"
+              >
+                <span class="choice-icon">🔴</span>
+                <span class="choice-label">Flagged</span>
+                <span class="choice-sub">Discrepancy found</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Risk Score Slider & Readout -->
+          <div class="form-group">
+            <div class="risk-label-row">
+              <label class="form-label">Calculated Risk Index (0 - 100)</label>
+              <span class="risk-badge-live"
+                [class.risk-low]="editRiskScore() < 20"
+                [class.risk-medium]="editRiskScore() >= 20 && editRiskScore() < 60"
+                [class.risk-high]="editRiskScore() >= 60"
+              >
+                {{ editRiskScore() }} / 100
+                ({{ editRiskScore() < 20 ? 'Low Risk' : editRiskScore() < 60 ? 'Moderate Risk' : 'High Risk Alert' }})
+              </span>
+            </div>
+            <input
+              type="range"
+              min="0"
+              max="100"
+              [ngModel]="editRiskScore()"
+              (ngModelChange)="editRiskScore.set($event)"
+              class="risk-slider"
+            />
+            <p class="field-hint">
+              Points indicate risk severity: 0-19 clear, 20-59 pending documentation, 60-100 failed screening.
+            </p>
+          </div>
+
+          <!-- Audit Notes & Verification Findings -->
+          <div class="form-group">
+            <label class="form-label">Verification Findings & Verifier Notes</label>
+            <textarea
+              rows="3"
+              class="form-input textarea-notes"
+              [ngModel]="editNotes()"
+              (ngModelChange)="editNotes.set($event)"
+              placeholder="Enter audit notes, registrar confirmation, or jurisdiction findings..."
+            ></textarea>
+          </div>
+
+          <!-- Verifier Attribution Banner -->
+          <div class="verifier-attribution-banner">
+            <div class="banner-icon">✍️</div>
+            <div class="banner-text">
+              <span class="banner-title">Sign-off & Attribution:</span>
+              @if (record.verifiedBy === 'Pending') {
+                <span class="banner-desc">This record is currently <strong>Unassigned / Pending</strong>. Saving a verification status will record <strong>{{ currentUser()?.name || 'Current User' }}</strong> as the signing officer.</span>
+              } @else {
+                <span class="banner-desc">Previously signed by <strong>{{ record.verifiedBy }}</strong>. Any updates will be logged under <strong>{{ currentUser()?.name || 'Current User' }}</strong> in the audit trail.</span>
+              }
+            </div>
+          </div>
+
+          <!-- Audit Trail & History Timeline -->
+          <div class="audit-history-section">
+            <div class="audit-history-header">
+              <span class="audit-title">🛡️ Audit Trail & Change History</span>
+              <span class="audit-badge">{{ (record.auditLog?.length || 0) + 1 }} event(s) logged</span>
+            </div>
+
+            <div class="audit-timeline">
+              <!-- Initial Intake Event -->
+              <div class="timeline-item initial">
+                <div class="timeline-dot initial"></div>
+                <div class="timeline-content">
+                  <div class="timeline-top">
+                    <span class="timeline-action">File Submitted for Background Screening</span>
+                    <span class="timeline-time font-mono">{{ record.submittedDate }}</span>
+                  </div>
+                  <p class="timeline-sub">
+                    Initial intake check type: <strong>{{ record.checkType }}</strong> &bull; Access Tier: {{ record.accessLevel }}
+                  </p>
+                </div>
+              </div>
+
+              <!-- Logged Updates -->
+              @for (entry of record.auditLog || []; track entry.timestamp) {
+                <div class="timeline-item">
+                  <div class="timeline-dot" [class.dot-verified]="entry.newStatus === 'Verified'" [class.dot-flagged]="entry.newStatus === 'Flagged'"></div>
+                  <div class="timeline-content">
+                    <div class="timeline-top">
+                      <span class="timeline-action">
+                        {{ entry.action }}
+                        @if (entry.newStatus) {
+                          <span class="status-pill status-pill-sm"
+                            [class.pill-verified]="entry.newStatus === 'Verified'"
+                            [class.pill-pending]="entry.newStatus === 'Pending Review'"
+                            [class.pill-flagged]="entry.newStatus === 'Flagged'"
+                          >
+                            {{ entry.newStatus }}
+                          </span>
+                        }
+                      </span>
+                      <span class="timeline-time font-mono">{{ entry.timestamp | date:'medium' }}</span>
+                    </div>
+                    <p class="timeline-sub">
+                      Edited by: <strong>{{ entry.editorName }}</strong>
+                      @if (entry.previousStatus && entry.newStatus && entry.previousStatus !== entry.newStatus) {
+                        <span> &bull; Transitioned from <em>{{ entry.previousStatus }}</em> &rarr; <em>{{ entry.newStatus }}</em></span>
+                      }
+                    </p>
+                    @if (entry.notes) {
+                      <blockquote class="timeline-quote">
+                        &ldquo;{{ entry.notes }}&rdquo;
+                      </blockquote>
+                    }
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
+
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn-cancel" (click)="closeRecordModal()">
+            Cancel
+          </button>
+          <button
+            type="button"
+            class="btn-save-record"
+            [disabled]="isUpdatingRecord()"
+            (click)="saveRecordUpdate()"
+          >
+            @if (isUpdatingRecord()) {
+              <span class="spinner-sm"></span> Saving Update...
+            } @else {
+              <span>✓ Save Verification Update</span>
+            }
+          </button>
+        </div>
+
+      </div>
+    </div>
+  }
+</div>

@@ -1,0 +1,423 @@
+<div class="admin-layout">
+  <!-- Top Nav -->
+  <header class="top-nav">
+    <div class="nav-brand">
+      <div class="brand-logo">🛡️</div>
+      <div class="brand-info">
+        <span class="brand-name">MPloy<span class="brand-highlight">Chek</span></span>
+        <span class="brand-tag">Administration Control</span>
+      </div>
+    </div>
+
+    <!-- Center Navigation Links -->
+    <nav class="nav-links">
+      <a routerLink="/dashboard" class="nav-link">
+        <span>📋</span> Verification Records
+      </a>
+      <a routerLink="/admin" class="nav-link active admin-nav-link">
+        <span>👥</span> User Management <span class="badge-admin-tag">Admin</span>
+      </a>
+    </nav>
+
+    <!-- Admin Profile & Logout -->
+    <div class="nav-user-section">
+      @if (authService.currentUser(); as user) {
+        <div class="user-pill">
+          <div class="user-avatar avatar-admin">
+            {{ user.name.charAt(0) }}
+          </div>
+          <div class="user-meta">
+            <span class="user-name">{{ user.name }}</span>
+            <span class="user-role-badge role-admin">{{ user.role }}</span>
+          </div>
+        </div>
+      }
+      <button class="logout-btn" (click)="logout()" title="Sign out">
+        <span>Sign Out 🚪</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Admin Container -->
+  <main class="admin-main">
+    
+    <!-- Header Hero Section -->
+    <section class="admin-hero">
+      <div class="hero-left">
+        <div class="hero-title-badge">
+          <span>⚡ System Management</span>
+        </div>
+        <h1>Database User Management</h1>
+        <p>
+          Full CRUD access to user accounts persisted in <code>data/users.json</code>. Manage roles, access levels, and credentials.
+        </p>
+      </div>
+
+      <div class="hero-right">
+        <button class="btn-primary" (click)="openAddModal()">
+          <span>+ Add New User</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- Feedback Banner (Toast) -->
+    @if (feedbackMessage(); as msg) {
+      <div
+        class="toast-banner"
+        [class.toast-success]="msg.type === 'success'"
+        [class.toast-error]="msg.type === 'error'"
+      >
+        <span class="toast-icon">{{ msg.type === 'success' ? '✓' : '⚠️' }}</span>
+        <span>{{ msg.text }}</span>
+      </div>
+    }
+
+    <!-- Latency Simulator Panel -->
+    <section class="latency-panel">
+      <div class="latency-info">
+        <span class="latency-title">
+          <span class="pulse-indicator" [class.active]="isLoading()"></span>
+          <strong>User API Delay Controller</strong>
+          <code class="font-mono">?delay={{ selectedDelayMs() }}ms</code>
+        </span>
+        <span class="latency-sub">Test asynchronous database response latency.</span>
+      </div>
+
+      <div class="latency-actions">
+        <div class="latency-buttons">
+          <button
+            type="button"
+            class="pill-btn"
+            [class.active]="selectedDelayMs() === 0"
+            (click)="onDelayChange(0)"
+          >
+            0ms
+          </button>
+          <button
+            type="button"
+            class="pill-btn"
+            [class.active]="selectedDelayMs() === 500"
+            (click)="onDelayChange(500)"
+          >
+            500ms
+          </button>
+          <button
+            type="button"
+            class="pill-btn"
+            [class.active]="selectedDelayMs() === 1000"
+            (click)="onDelayChange(1000)"
+          >
+            1000ms
+          </button>
+          <button
+            type="button"
+            class="pill-btn"
+            [class.active]="selectedDelayMs() === 2000"
+            (click)="onDelayChange(2000)"
+          >
+            2000ms
+          </button>
+        </div>
+
+        <button
+          type="button"
+          class="btn-refresh"
+          (click)="loadUsers()"
+          [disabled]="isLoading()"
+        >
+          <span class="refresh-icon" [class.spinning]="isLoading()">🔄</span>
+          <span>{{ isLoading() ? 'Fetching...' : 'Refresh List' }}</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- Users Table Container -->
+    <section class="users-card">
+      <div class="card-header">
+        <div class="header-left">
+          <h2>Registered Accounts</h2>
+          <span class="count-tag">{{ users().length }} total registered users</span>
+        </div>
+        <div class="header-right">
+          @if (isLoading()) {
+            <span class="async-tag">
+              <span class="spinner-sm"></span> Loading asynchronously ({{ elapsedLoadTime() }}ms)...
+            </span>
+          } @else {
+            <span class="async-tag success-tag">
+              ✓ Loaded in {{ elapsedLoadTime() }}ms
+            </span>
+          }
+        </div>
+      </div>
+
+      <!-- Loading State Skeleton -->
+      @if (isLoading()) {
+        <div class="skeleton-wrapper">
+          <div class="skeleton-row" *ngFor="let i of [1, 2, 3, 4]">
+            <div class="skeleton-cell w-20"></div>
+            <div class="skeleton-cell w-30"></div>
+            <div class="skeleton-cell w-20"></div>
+            <div class="skeleton-cell w-15"></div>
+            <div class="skeleton-cell w-15"></div>
+          </div>
+        </div>
+      }
+
+      <!-- Table View -->
+      @if (!isLoading()) {
+        <div class="table-responsive">
+          <table class="users-table">
+            <thead>
+              <tr>
+                <th>User ID</th>
+                <th>Full Name & Email</th>
+                <th>Department</th>
+                <th>Role Tier</th>
+                <th>Created Date</th>
+                <th class="text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (user of users(); track user.id) {
+                <tr class="user-row">
+                  <td>
+                    <div class="user-id-cell">
+                      <span class="id-badge font-mono">{{ user.userId }}</span>
+                      <span class="db-id font-mono">{{ user.id }}</span>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="name-email-cell">
+                      <strong class="user-fullname">{{ user.name }}</strong>
+                      <span class="user-email">{{ user.email }}</span>
+                    </div>
+                  </td>
+                  <td>
+                    <span class="dept-badge">{{ user.department }}</span>
+                  </td>
+                  <td>
+                    <span
+                      class="role-pill"
+                      [class.role-admin]="user.role === 'Admin'"
+                      [class.role-general]="user.role === 'General User'"
+                    >
+                      {{ user.role === 'Admin' ? '⚡ Admin' : '👤 General User' }}
+                    </span>
+                  </td>
+                  <td class="text-muted text-sm">
+                    {{ user.createdAt | date:'mediumDate' }}
+                  </td>
+                  <td class="text-right">
+                    <div class="action-buttons">
+                      <button
+                        class="btn-edit"
+                        (click)="openEditModal(user)"
+                        title="Edit user details"
+                      >
+                        ✏️ Edit
+                      </button>
+                      <button
+                        class="btn-delete"
+                        (click)="openDeleteModal(user)"
+                        title="Delete user"
+                        [disabled]="user.userId === authService.currentUser()?.userId"
+                      >
+                        🗑️ Delete
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              } @empty {
+                <tr>
+                  <td colspan="6" class="empty-state">
+                    No users stored in database. Click "+ Add New User" above.
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </section>
+
+  </main>
+
+  <!-- Add / Edit User Modal Dialog -->
+  @if (isModalOpen()) {
+    <div class="modal-backdrop" (click)="closeModal()">
+      <div class="modal-card" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h3>{{ isEditing() ? 'Edit User Account' : 'Add New User to Database' }}</h3>
+          <button class="btn-close" (click)="closeModal()">&times;</button>
+        </div>
+
+        <form [formGroup]="userForm" (ngSubmit)="onSaveUser()" novalidate>
+          <div class="modal-body">
+            
+            <!-- User ID -->
+            <div class="form-group">
+              <label class="form-label">User ID (Username)</label>
+              <input
+                type="text"
+                formControlName="userId"
+                class="form-input"
+                placeholder="e.g. emily.watson"
+              />
+              @if (userForm.get('userId')?.touched && userForm.get('userId')?.errors?.['required']) {
+                <span class="err-msg">User ID is required.</span>
+              }
+            </div>
+
+            <!-- Full Name -->
+            <div class="form-group">
+              <label class="form-label">Full Name</label>
+              <input
+                type="text"
+                formControlName="name"
+                class="form-input"
+                placeholder="e.g. Emily Watson"
+              />
+              @if (userForm.get('name')?.touched && userForm.get('name')?.errors?.['required']) {
+                <span class="err-msg">Full Name is required.</span>
+              }
+            </div>
+
+            <!-- Email -->
+            <div class="form-group">
+              <label class="form-label">Email Address</label>
+              <input
+                type="email"
+                formControlName="email"
+                class="form-input"
+                placeholder="e.g. emily.watson@mploychek.io"
+              />
+              @if (userForm.get('email')?.touched && userForm.get('email')?.errors?.['required']) {
+                <span class="err-msg">Email is required.</span>
+              }
+            </div>
+
+            <!-- Department -->
+            <div class="form-group">
+              <label class="form-label">Department</label>
+              <input
+                type="text"
+                formControlName="department"
+                class="form-input"
+                placeholder="e.g. Talent Acquisition"
+              />
+            </div>
+
+            <!-- Role Selector -->
+            <div class="form-group">
+              <label class="form-label">Account Role</label>
+              <select formControlName="role" class="form-input select-role">
+                <option value="General User">General User (Restricted access)</option>
+                <option value="Admin">Admin (Full administrative access)</option>
+              </select>
+            </div>
+
+            <!-- Password -->
+            <div class="form-group">
+              <label class="form-label">
+                {{ isEditing() ? 'New Password (Leave blank to keep current)' : 'Account Password' }}
+              </label>
+              <input
+                type="password"
+                formControlName="password"
+                class="form-input"
+                placeholder="{{ isEditing() ? '••••••••' : 'Enter password (min 6 chars)' }}"
+              />
+              @if (userForm.get('password')?.touched && userForm.get('password')?.errors?.['required']) {
+                <span class="err-msg">Password is required.</span>
+              }
+            </div>
+
+          </div>
+
+          <div class="modal-footer">
+            <button type="button" class="btn-cancel" (click)="closeModal()">
+              Cancel
+            </button>
+            <button
+              type="submit"
+              class="btn-save"
+              [disabled]="isSubmitting()"
+            >
+              @if (isSubmitting()) {
+                <span class="spinner-sm"></span> Saving...
+              } @else {
+                <span>{{ isEditing() ? 'Save Changes' : 'Create User' }}</span>
+              }
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+
+  <!-- Custom Delete Confirmation Modal Dialog -->
+  @if (isDeleteModalOpen() && userToDelete(); as user) {
+    <div class="modal-backdrop" (click)="closeDeleteModal()">
+      <div class="modal-card modal-delete-card" (click)="$event.stopPropagation()">
+        <div class="modal-header delete-header">
+          <div class="delete-title-group">
+            <span class="delete-icon-badge">🗑️</span>
+            <h3>Confirm User Deletion</h3>
+          </div>
+          <button class="btn-close" (click)="closeDeleteModal()">&times;</button>
+        </div>
+
+        <div class="modal-body delete-body">
+          <p class="delete-warning-text">
+            Are you sure you want to permanently delete this user account from the database? This action cannot be undone.
+          </p>
+
+          <!-- User Card Preview -->
+          <div class="user-delete-preview">
+            <div class="preview-avatar" [class.avatar-admin]="user.role === 'Admin'">
+              {{ user.name.charAt(0) }}
+            </div>
+            <div class="preview-info">
+              <strong class="preview-name">{{ user.name }}</strong>
+              <div class="preview-tags">
+                <span class="font-mono text-cyan">@{{ user.userId }}</span>
+                <span class="preview-dot">&bull;</span>
+                <span class="preview-dept">{{ user.department }}</span>
+                <span class="preview-dot">&bull;</span>
+                <span class="preview-role-badge" [class.badge-admin]="user.role === 'Admin'">
+                  {{ user.role }}
+                </span>
+              </div>
+              <span class="preview-email">{{ user.email }}</span>
+            </div>
+          </div>
+
+          @if (user.userId === authService.currentUser()?.userId) {
+            <div class="self-delete-warning">
+              ⚠️ <strong>Action Blocked:</strong> You cannot delete your own currently active administrator account.
+            </div>
+          }
+        </div>
+
+        <div class="modal-footer delete-footer">
+          <button type="button" class="btn-cancel" (click)="closeDeleteModal()">
+            Cancel
+          </button>
+          <button
+            type="button"
+            class="btn-danger-delete"
+            [disabled]="isDeleting() || user.userId === authService.currentUser()?.userId"
+            (click)="confirmDelete()"
+          >
+            @if (isDeleting()) {
+              <span class="spinner-sm"></span> Deleting...
+            } @else {
+              <span>Yes, Delete User</span>
+            }
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+</div>

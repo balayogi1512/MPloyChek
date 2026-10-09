@@ -1,0 +1,160 @@
+<div class="login-wrapper">
+  <!-- Decorative background glows -->
+  <div class="ambient-glow glow-1"></div>
+  <div class="ambient-glow glow-2"></div>
+
+  <div class="login-container">
+    <!-- Brand Header -->
+    <header class="brand-header">
+      <div class="logo-badge">
+        <span class="logo-icon">🛡️</span>
+      </div>
+      <h1 class="brand-title">MPloy<span class="brand-highlight">Chek</span></h1>
+      <p class="brand-subtitle">Background Verification & Workforce Trust Portal</p>
+    </header>
+
+    <!-- Main Login Card -->
+    <div class="card login-card">
+      <div class="card-header">
+        <h2>Sign In</h2>
+        <p>Access your verification dashboard</p>
+      </div>
+
+      <!-- Error Notification Banner -->
+      @if (errorMessage()) {
+        <div class="alert alert-danger" role="alert">
+          <span class="alert-icon">⚠️</span>
+          <div class="alert-content">
+            <strong>Authentication Failed</strong>
+            <p>{{ errorMessage() }}</p>
+          </div>
+        </div>
+      }
+
+      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" novalidate>
+        
+        <!-- Role Selector Pills -->
+        <div class="form-group">
+          <label class="form-label">Select Account Role</label>
+          <div class="role-selector">
+            <button
+              type="button"
+              class="role-option"
+              [class.active]="loginForm.value.role === 'General User'"
+              (click)="setRole('General User')"
+            >
+              <span class="role-icon">👤</span>
+              <span class="role-title">General User</span>
+              <span class="role-desc">Candidate Reviewer</span>
+            </button>
+
+            <button
+              type="button"
+              class="role-option"
+              [class.active]="loginForm.value.role === 'Admin'"
+              (click)="setRole('Admin')"
+            >
+              <span class="role-icon">⚡</span>
+              <span class="role-title">Admin</span>
+              <span class="role-desc">System Manager</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- User ID Input -->
+        <div class="form-group">
+          <label for="userId" class="form-label">User ID / Username / Name</label>
+          <div class="input-wrapper" [class.input-error]="f['userId'].touched && f['userId'].invalid">
+            <span class="input-icon">@</span>
+            <input
+              id="userId"
+              type="text"
+              formControlName="userId"
+              placeholder="e.g. admin, user, Alex Morgan, or email"
+              autocomplete="username"
+            />
+          </div>
+          @if (f['userId'].touched && f['userId'].errors?.['required']) {
+            <span class="validation-message">User ID / Username / Name is required.</span>
+          }
+          @if (f['userId'].touched && f['userId'].errors?.['minlength']) {
+            <span class="validation-message">Must be at least 3 characters.</span>
+          }
+        </div>
+
+        <!-- Password Input -->
+        <div class="form-group">
+          <label for="password" class="form-label">Password</label>
+          <div class="input-wrapper" [class.input-error]="f['password'].touched && f['password'].invalid">
+            <span class="input-icon">🔒</span>
+            <input
+              id="password"
+              [type]="showPassword() ? 'text' : 'password'"
+              formControlName="password"
+              placeholder="Enter your password"
+              autocomplete="current-password"
+            />
+            <button
+              type="button"
+              class="toggle-password-btn"
+              (click)="toggleShowPassword()"
+              [title]="showPassword() ? 'Hide password' : 'Show password'"
+            >
+              {{ showPassword() ? '👁️' : '👁️‍🗨️' }}
+            </button>
+          </div>
+          @if (f['password'].touched && f['password'].errors?.['required']) {
+            <span class="validation-message">Password is required.</span>
+          }
+        </div>
+
+        <!-- Submit Button -->
+        <button
+          type="submit"
+          class="submit-btn"
+          [disabled]="isLoading()"
+          [class.loading]="isLoading()"
+        >
+          @if (isLoading()) {
+            <span class="spinner"></span>
+            <span>Verifying Credentials...</span>
+          } @else {
+            <span>Sign In to Portal →</span>
+          }
+        </button>
+      </form>
+
+      <!-- Reviewer Quick Demo Fillers -->
+      <div class="demo-credentials-box">
+        <div class="demo-header">
+          <span>🧪 Evaluation Quick-Fill:</span>
+        </div>
+        <div class="demo-buttons">
+          <button
+            type="button"
+            class="demo-chip chip-admin"
+            (click)="fillDemoCredentials('admin')"
+            title="Auto-fill admin / password123 with Admin role"
+          >
+            Fill Admin (admin)
+          </button>
+          <button
+            type="button"
+            class="demo-chip chip-user"
+            (click)="fillDemoCredentials('user')"
+            title="Auto-fill user / password123 with General User role"
+          >
+            Fill General User (user)
+          </button>
+        </div>
+        <p class="demo-hint">Default password for both is <code>password123</code></p>
+      </div>
+
+    </div>
+
+    <!-- Footer Security Notice -->
+    <footer class="login-footer">
+      <p>🔒 256-Bit SSL Encrypted Verification Gateway &bull; NSQTech Enterprise</p>
+    </footer>
+  </div>
+</div>

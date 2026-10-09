@@ -1,0 +1,46 @@
+[
+  {
+    "id": "USR-001",
+    "userId": "admin",
+    "username": "admin",
+    "password": "password123",
+    "name": "Victoria Stone",
+    "role": "General User",
+    "department": "Security & Compliance",
+    "email": "victoria.stone@mploychek.io",
+    "createdAt": "2025-01-10T08:30:00Z"
+  },
+  {
+    "id": "USR-002",
+    "userId": "user",
+    "username": "user",
+    "password": "password123",
+    "name": "Alex Morgan",
+    "role": "General User",
+    "department": "Talent Acquisition",
+    "email": "alex.morgan@mploychek.io",
+    "createdAt": "2025-01-15T09:15:00Z"
+  },
+  {
+    "id": "USR-003",
+    "userId": "jordan.lee",
+    "username": "jordan.lee",
+    "password": "password123",
+    "name": "Jordan Lee",
+    "role": "Admin",
+    "department": "Human Resources",
+    "email": "jordan.lee@mploychek.io",
+    "createdAt": "2025-02-01T11:00:00Z"
+  },
+  {
+    "id": "USR-004",
+    "userId": "priya.sharma",
+    "username": "priya.sharma",
+    "password": "password123",
+    "name": "Priya Sharma",
+    "role": "Admin",
+    "department": "Executive Audit",
+    "email": "priya.sharma@mploychek.io",
+    "createdAt": "2025-02-18T14:45:00Z"
+  }
+]

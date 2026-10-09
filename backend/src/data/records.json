@@ -1,0 +1,94 @@
+[
+  {
+    "id": "REC-801",
+    "candidateName": "David Chen",
+    "position": "Senior Software Engineer",
+    "checkType": "Employment & Education History",
+    "status": "Verified",
+    "accessLevel": "General",
+    "submittedDate": "2025-03-01",
+    "verifiedBy": "Priya Sharma",
+    "riskScore": 2,
+    "notes": "Degrees verified via National Student Clearinghouse. Previous 3 employers verified."
+  },
+  {
+    "id": "REC-802",
+    "candidateName": "Elena Rostova",
+    "position": "Product Marketing Lead",
+    "checkType": "Identity & Right to Work",
+    "status": "Verified",
+    "accessLevel": "General",
+    "submittedDate": "2025-03-03",
+    "verifiedBy": "Jordan Lee",
+    "riskScore": 2,
+    "notes": "Passport and government ID valid. Work authorization confirmed."
+  },
+  {
+    "id": "REC-803",
+    "candidateName": "Marcus Vance",
+    "position": "DevOps Engineer",
+    "checkType": "Professional Certifications",
+    "status": "Pending Review",
+    "accessLevel": "General",
+    "submittedDate": "2025-03-05",
+    "verifiedBy": "Pending",
+    "riskScore": 80,
+    "notes": "AWS Certified Solutions Architect verification awaiting registry confirmation.",
+    "lastModifiedBy": "Priya Sharma",
+    "lastModifiedAt": "2026-10-09T12:23:14.172Z",
+    "auditLog": [
+      {
+        "timestamp": "2026-10-09T12:23:05.954Z",
+        "editorName": "Priya Sharma",
+        "action": "Status updated from \"Pending Review\" to \"Flagged\"",
+        "previousStatus": "Pending Review",
+        "newStatus": "Flagged",
+        "notes": "AWS Certified Solutions Architect verification awaiting registry confirmation."
+      },
+      {
+        "timestamp": "2026-10-09T12:23:14.172Z",
+        "editorName": "Priya Sharma",
+        "action": "Status updated from \"Flagged\" to \"Pending Review\"",
+        "previousStatus": "Flagged",
+        "newStatus": "Pending Review",
+        "notes": "AWS Certified Solutions Architect verification awaiting registry confirmation."
+      }
+    ]
+  },
+  {
+    "id": "REC-804",
+    "candidateName": "Sophia Martinez",
+    "position": "VP of Finance",
+    "checkType": "Executive Credit & Regulatory Sanctions",
+    "status": "Verified",
+    "accessLevel": "Admin",
+    "submittedDate": "2025-02-27",
+    "verifiedBy": "Victoria Stone",
+    "riskScore": 8,
+    "notes": "Confidential executive credit assessment clear. Zero regulatory sanctions found."
+  },
+  {
+    "id": "REC-805",
+    "candidateName": "Arthur Pendelton",
+    "position": "Chief Information Security Officer",
+    "checkType": "Comprehensive Criminal Background",
+    "status": "Flagged",
+    "accessLevel": "Admin",
+    "submittedDate": "2025-03-02",
+    "verifiedBy": "Priya Sharma",
+    "riskScore": 82,
+    "notes": "Discrepancy noted in jurisdiction records. Requires manual legal compliance review."
+  },
+  {
+    "id": "REC-806",
+    "candidateName": "Chloe Bennett",
+    "position": "Frontend Developer",
+    "checkType": "Reference Check",
+    "status": "Verified",
+    "accessLevel": "General",
+    "submittedDate": "2025-03-04",
+    "verifiedBy": "Alex Morgan",
+    "riskScore": 0,
+    "notes": "Direct references from 2 past engineering managers provided outstanding feedback."
+  }
+]
